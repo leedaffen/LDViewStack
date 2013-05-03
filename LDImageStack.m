@@ -9,14 +9,22 @@
 #import "LDImageStack.h"
 
 
-#define kShuffleAnimationDuration 0.25f
+float randomRotationAngle() {
+    // provides random rotations over an arc -π/24rad to π/24rad (approx. 336 to 24 deg)
+    Float32 angle = arc4random()/((pow(2, 32)-1)) * M_PI/24;
+    Boolean neg = arc4random()%2<1? false : true;
+    
+    if (neg)
+        angle = 0-angle;
+    
+    return angle;
+}
 
 
 @interface LDImageStack()
 
 @property (nonatomic, assign) NSUInteger countOfItems;
 @property (nonatomic, strong) NSMutableArray *imageViews;
-@property (nonatomic, strong) NSMutableArray *imageRotations;
 
 @property (nonatomic, strong) UIImageView *topImageView;
 @property (nonatomic, assign) CGRect limitRect;
@@ -54,36 +62,23 @@
     return self;
 }
 
-- (CGFloat)rotationAngleForIndex:(NSUInteger)index {
-    if (0 == index) return 0;
-    
-    CGFloat angle = arc4random()/((pow(2, 32)-1)) * M_PI/24;
-    BOOL neg = arc4random()%2<1? NO : YES;
-    
-    if (neg)
-        angle = 0-angle;
-    
-    [self.imageRotations addObject:@(angle)];
-    
-    return angle;
-}
-
 - (UIImageView *)imageViewAtIndex:(NSUInteger)index {
     UIImageView *imageView = [self.dataSource imageStack:self imageViewAtIndex:index];
-    imageView.backgroundColor = UIColor.whiteColor;
-    imageView.frame = self.bounds;
     
+    imageView.layer.shouldRasterize = YES;
+    
+    // add shadow
     imageView.layer.shadowColor = UIColor.blackColor.CGColor;
     imageView.layer.shadowOffset = CGSizeMake(2.0f, 2.0f);
     imageView.layer.shadowOpacity = 0.35f;
     imageView.layer.shadowRadius = 3.0f;
     
+    // add border
     imageView.layer.borderColor = UIColor.whiteColor.CGColor;
     imageView.layer.borderWidth = 5.0f;
     
-    imageView.layer.shouldRasterize = YES;
-    
-    imageView.transform = CGAffineTransformRotate(imageView.transform, [self rotationAngleForIndex:index]);
+    // apply random rotation transform
+    imageView.transform = CGAffineTransformRotate(imageView.transform, randomRotationAngle());
     
     return imageView;
 }
@@ -91,7 +86,6 @@
 - (void)loadDataFromDataSource {
     self.countOfItems = [self.dataSource numberOfImageViewsInStack];
     self.imageViews = [NSMutableArray arrayWithCapacity:self.countOfItems];
-    self.imageRotations = [NSMutableArray arrayWithCapacity:self.countOfItems];
     
     for (int index=self.countOfItems-1; index>=0 ; --index) {
         UIImageView *imageView = [self imageViewAtIndex:index];
@@ -131,13 +125,13 @@
     _animating = YES;
     
     if (newTopImage) {
-        [UIView animateWithDuration:animated?kShuffleAnimationDuration:0 animations:^{
+        [UIView animateWithDuration:animated?self.shuffleAnimationDuration:0 animations:^{
             
             self.topImageView.center = [self bestAnimationPoint];
             
         } completion:^(BOOL finished) {
             
-            [UIView animateWithDuration:animated?kShuffleAnimationDuration:0 animations:^{
+            [UIView animateWithDuration:animated?self.shuffleAnimationDuration:0 animations:^{
                 
                 self.topImageView.center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
                 [self sendSubviewToBack:self.topImageView];
@@ -150,13 +144,16 @@
                 self.imageViews = temp;
                 self.topImageView = self.imageViews[0];
                 
+                if ([self.delegate respondsToSelector:@selector(imageStack:didMoveNewImageViewToTopOfStack:)])
+                    [self.delegate imageStack:self didMoveNewImageViewToTopOfStack:self.topImageView];
+                
                 _animating = NO;
                 
             }];
             
         }];
     } else {
-        [UIView animateWithDuration:animated?kShuffleAnimationDuration:0 animations:^{
+        [UIView animateWithDuration:animated?self.shuffleAnimationDuration:0 animations:^{
             self.topImageView.center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
         } completion:^(BOOL finished) {
             _animating = NO;
@@ -173,6 +170,12 @@
         
         [self initialiseWithNewDataSource];
     }
+}
+
+- (CGFloat)shuffleAnimationDuration {
+    if (0 == _shuffleAnimationDuration)
+        _shuffleAnimationDuration = 0.15f;
+    return _shuffleAnimationDuration;
 }
 
 
