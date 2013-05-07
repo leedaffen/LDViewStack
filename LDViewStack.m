@@ -1,12 +1,12 @@
 //
-//  LDImageStack.m
-//  Image Stack Reference
+//  LDViewStack.m
+//  View Stack
 //
 //  Created by Lee Daffen on 03/05/2013.
 //  Copyright (c) 2013 Lee Daffen. All rights reserved.
 //
 
-#import "LDImageStack.h"
+#import "LDViewStack.h"
 
 
 float randomRotationAngle() {
@@ -21,12 +21,12 @@ float randomRotationAngle() {
 }
 
 
-@interface LDImageStack()
+@interface LDViewStack()
 
 @property (nonatomic, assign) NSUInteger countOfItems;
-@property (nonatomic, strong) NSMutableArray *imageViews;
+@property (nonatomic, strong) NSMutableArray *views;
 
-@property (nonatomic, strong) UIImageView *topImageView;
+@property (nonatomic, strong) UIView *topView;
 @property (nonatomic, assign) CGRect limitRect;
 
 @property (nonatomic, strong) UIPanGestureRecognizer *pan;
@@ -34,7 +34,7 @@ float randomRotationAngle() {
 @end
 
 
-@implementation LDImageStack {
+@implementation LDViewStack {
     BOOL _dragging;
     BOOL _animating;
 }
@@ -62,46 +62,46 @@ float randomRotationAngle() {
     return self;
 }
 
-- (UIImageView *)imageViewAtIndex:(NSUInteger)index {
-    UIImageView *imageView = [self.dataSource imageStack:self imageViewAtIndex:index];
+- (UIView *)viewAtIndex:(NSUInteger)index {
+    UIView *view = [self.dataSource viewStack:self viewAtIndex:index];
     
-    imageView.layer.shouldRasterize = YES;
+    view.layer.shouldRasterize = YES;
     
     // add shadow
-    imageView.layer.shadowColor = UIColor.blackColor.CGColor;
-    imageView.layer.shadowOffset = CGSizeMake(2.0f, 2.0f);
-    imageView.layer.shadowOpacity = 0.35f;
-    imageView.layer.shadowRadius = 3.0f;
+    view.layer.shadowColor = UIColor.blackColor.CGColor;
+    view.layer.shadowOffset = CGSizeMake(2.0f, 2.0f);
+    view.layer.shadowOpacity = 0.35f;
+    view.layer.shadowRadius = 3.0f;
     
     // add border
-    imageView.layer.borderColor = UIColor.whiteColor.CGColor;
-    imageView.layer.borderWidth = 5.0f;
+    view.layer.borderColor = UIColor.whiteColor.CGColor;
+    view.layer.borderWidth = 5.0f;
     
     // apply random rotation transform
-    imageView.transform = CGAffineTransformRotate(imageView.transform, randomRotationAngle());
+    view.transform = CGAffineTransformRotate(view.transform, randomRotationAngle());
     
-    return imageView;
+    return view;
 }
 
 - (void)loadDataFromDataSource {
-    self.countOfItems = [self.dataSource numberOfImageViewsInStack];
-    self.imageViews = [NSMutableArray arrayWithCapacity:self.countOfItems];
+    self.countOfItems = [self.dataSource numberOfViewsInStack];
+    self.views = [NSMutableArray arrayWithCapacity:self.countOfItems];
     
     for (int index=self.countOfItems-1; index>=0 ; --index) {
-        UIImageView *imageView = [self imageViewAtIndex:index];
+        UIView *view = [self viewAtIndex:index];
 
-        [self.imageViews insertObject:imageView atIndex:0];
-        [self addSubview:imageView];
+        [self.views insertObject:view atIndex:0];
+        [self addSubview:view];
     }
     
-    if (self.imageViews.count >= 1)
-        self.topImageView = self.imageViews[0];
+    if (self.views.count >= 1)
+        self.topView = self.views[0];
 }
 
 - (void)initialiseWithNewDataSource {
-    if (nil != self.imageViews) {
-        [self.imageViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        [self.imageViews removeAllObjects];
+    if (nil != self.views) {
+        [self.views makeObjectsPerformSelector:@selector(removeFromSuperview)];
+        [self.views removeAllObjects];
     }
     
     [self loadDataFromDataSource];
@@ -112,40 +112,40 @@ float randomRotationAngle() {
 }
 
 - (CGPoint)bestAnimationPoint {
-    CGPoint currentPoint = self.topImageView.center;
-    CGFloat imageWidth = self.topImageView.bounds.size.width;
+    CGPoint currentPoint = self.topView.center;
+    CGFloat viewWidth = self.topView.bounds.size.width;
     
-    CGFloat xIdeal = (currentPoint.x <= self.bounds.size.width/2) ? 0-(imageWidth/2) : self.bounds.size.width+(imageWidth/2);
-    CGFloat yIdeal = self.topImageView.center.y;
+    CGFloat xIdeal = (currentPoint.x <= self.bounds.size.width/2) ? 0-(viewWidth/2) : self.bounds.size.width+(viewWidth/2);
+    CGFloat yIdeal = self.topView.center.y;
     
     return CGPointMake(xIdeal, yIdeal);
 }
 
-- (void)shuffleImages:(BOOL)animated newTopImage:(BOOL)newTopImage {
+- (void)shuffleViewsAnimated:(BOOL)animated newTopView:(BOOL)newTopView {
     _animating = YES;
     
-    if (newTopImage) {
+    if (newTopView) {
         [UIView animateWithDuration:animated?self.shuffleAnimationDuration:0 animations:^{
             
-            self.topImageView.center = [self bestAnimationPoint];
+            self.topView.center = [self bestAnimationPoint];
             
         } completion:^(BOOL finished) {
             
             [UIView animateWithDuration:animated?self.shuffleAnimationDuration:0 animations:^{
                 
-                self.topImageView.center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-                [self sendSubviewToBack:self.topImageView];
+                self.topView.center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
+                [self sendSubviewToBack:self.topView];
                 
             } completion:^(BOOL finished) {
                 
-                NSMutableArray *temp = [self.imageViews mutableCopy];
+                NSMutableArray *temp = [self.views mutableCopy];
                 [temp removeObjectAtIndex:0];
-                [temp addObject:self.imageViews[0]];
-                self.imageViews = temp;
-                self.topImageView = self.imageViews[0];
+                [temp addObject:self.views[0]];
+                self.views = temp;
+                self.topView = self.views[0];
                 
-                if ([self.delegate respondsToSelector:@selector(imageStack:didMoveNewImageViewToTopOfStack:)])
-                    [self.delegate imageStack:self didMoveNewImageViewToTopOfStack:self.topImageView];
+                if ([self.delegate respondsToSelector:@selector(viewStack:didMoveViewToTopOfStack:)])
+                    [self.delegate viewStack:self didMoveViewToTopOfStack:self.topView];
                 
                 _animating = NO;
                 
@@ -154,7 +154,7 @@ float randomRotationAngle() {
         }];
     } else {
         [UIView animateWithDuration:animated?self.shuffleAnimationDuration:0 animations:^{
-            self.topImageView.center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
+            self.topView.center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
         } completion:^(BOOL finished) {
             _animating = NO;
         }];
@@ -164,7 +164,7 @@ float randomRotationAngle() {
 
 #pragma mark - setters/getters
 
-- (void)setDataSource:(id<LDImageStackDataSource>)dataSource {
+- (void)setDataSource:(id<LDViewStackDataSource>)dataSource {
     if (_dataSource != dataSource) {
         _dataSource = dataSource;
         
@@ -181,21 +181,21 @@ float randomRotationAngle() {
 
 #pragma mark - user interaction
 
-- (void)dragImage:(UIPanGestureRecognizer *)recognizer {
-    CGPoint imagePosition = self.topImageView.center;
+- (void)dragView:(UIPanGestureRecognizer *)recognizer {
+    CGPoint viewPosition = self.topView.center;
     
     if (_dragging) {
         CGPoint translation = [recognizer translationInView:self];
         
-        imagePosition.x += translation.x;
-        imagePosition.y += translation.y;
+        viewPosition.x += translation.x;
+        viewPosition.y += translation.y;
         
-        self.topImageView.center = imagePosition;
+        self.topView.center = viewPosition;
         
         [recognizer setTranslation:CGPointZero inView:self];
     } else {
-        BOOL isInsideLimit = CGRectContainsPoint(self.limitRect, imagePosition);
-        [self shuffleImages:YES newTopImage:!isInsideLimit];
+        BOOL isInsideLimit = CGRectContainsPoint(self.limitRect, viewPosition);
+        [self shuffleViewsAnimated:YES newTopView:!isInsideLimit];
     }
 }
 
@@ -205,21 +205,21 @@ float randomRotationAngle() {
     switch (recognizer.state) {
         case UIGestureRecognizerStateBegan:
             _dragging = YES;
-            [self dragImage:recognizer];
+            [self dragView:recognizer];
             break;
             
         case UIGestureRecognizerStateChanged:
-            [self dragImage:recognizer];
+            [self dragView:recognizer];
             break;
             
         case UIGestureRecognizerStateEnded:
             _dragging = NO;
-            [self dragImage:recognizer];
+            [self dragView:recognizer];
             break;
             
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateFailed:
-            [self dragImage:recognizer];
+            [self dragView:recognizer];
             _dragging = NO;
             break;
             
