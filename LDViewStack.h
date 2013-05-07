@@ -29,7 +29,7 @@
 @protocol LDViewStackDelegate <NSObject>
 
 @optional
-- (void)viewStack:(LDViewStack *)viewStack didMoveViewToTopOfStack:(UIView *)imageView;
+- (void)viewStack:(LDViewStack *)viewStack didMoveViewToTopOfStack:(UIView *)imageView withIndex:(NSUInteger)index;
 
 @end
 
@@ -41,5 +41,6 @@
 @property (nonatomic, assign) CGFloat shuffleAnimationDuration;
 
 - (void)reloadData;
+- (UIView *)dequeueReusableView;
 
 @end

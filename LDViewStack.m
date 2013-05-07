@@ -25,8 +25,11 @@ float randomRotationAngle() {
 
 @property (nonatomic, assign) NSUInteger countOfItems;
 @property (nonatomic, strong) NSMutableArray *views;
+@property (nonatomic, strong) NSMutableArray *recycledViews;
 
 @property (nonatomic, strong) UIView *topView;
+@property (nonatomic, assign) NSUInteger indexOfTopView;
+@property (nonatomic, assign) NSUInteger maxVisibleItems;
 @property (nonatomic, assign) CGRect limitRect;
 
 @property (nonatomic, strong) UIPanGestureRecognizer *pan;
@@ -41,6 +44,7 @@ float randomRotationAngle() {
 
 - (void)initialise {
     self.userInteractionEnabled = YES;
+    self.maxVisibleItems = 5;
     
     self.limitRect = CGRectInset(self.bounds, self.bounds.size.width*0.2f, self.bounds.size.height*0.2f);
     
@@ -84,30 +88,37 @@ float randomRotationAngle() {
 }
 
 - (void)loadDataFromDataSource {
-    self.countOfItems = [self.dataSource numberOfViewsInStack];
-    self.views = [NSMutableArray arrayWithCapacity:self.countOfItems];
     
-    for (int index=self.countOfItems-1; index>=0 ; --index) {
+    NSUInteger viewCount = MAX(self.countOfItems, self.maxVisibleItems);
+    
+    self.countOfItems = [self.dataSource numberOfViewsInStack];
+    self.views = [NSMutableArray arrayWithCapacity:viewCount];
+    self.recycledViews = [NSMutableArray arrayWithCapacity:viewCount];
+    
+    for (int index=0; index<self.countOfItems; ++index) {
         UIView *view = [self viewAtIndex:index];
-
-        [self.views insertObject:view atIndex:0];
-        [self addSubview:view];
+        
+        if (index < self.maxVisibleItems) {
+            [self.views addObject:view];
+            [self insertSubview:view atIndex:0];
+        } else {
+            [self.views addObject:[NSNull null]];
+        }
     }
     
-    if (self.views.count >= 1)
+    if (self.views.count >= 1) {
         self.topView = self.views[0];
+        self.indexOfTopView = 0;
+    }
 }
 
 - (void)initialiseWithNewDataSource {
     if (nil != self.views) {
         [self.views makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [self.views removeAllObjects];
+        [self.recycledViews removeAllObjects];
     }
     
-    [self loadDataFromDataSource];
-}
-
-- (void)reloadData {
     [self loadDataFromDataSource];
 }
 
@@ -119,6 +130,31 @@ float randomRotationAngle() {
     CGFloat yIdeal = self.topView.center.y;
     
     return CGPointMake(xIdeal, yIdeal);
+}
+
+- (void)recycleView {
+    // Increment the index of the top view
+    ++self.indexOfTopView;
+    
+    if (self.indexOfTopView > self.countOfItems)
+        self.indexOfTopView = 0;
+    
+    NSLog(@"index of top view = %i", self.indexOfTopView);
+    
+    // Starting at the top index, iterate over the next few items
+    // If any of them are NSNull then we need to request a new view from our data source
+    for (int index=self.indexOfTopView; index<MIN(index+self.maxVisibleItems,self.views.count); ++index) {
+        if (NO == [self.views[index] isKindOfClass:[NSNull class]]) continue;
+        NSLog(@"current index = %i", index);
+        self.views[index] = [self viewAtIndex:index];
+    }
+    
+    NSMutableArray *temp = [self.views mutableCopy];
+    [temp removeObjectAtIndex:0];
+    [temp addObject:self.views[0]];
+    self.views = temp;
+    
+    self.topView = self.views[0];
 }
 
 - (void)shuffleViewsAnimated:(BOOL)animated newTopView:(BOOL)newTopView {
@@ -138,14 +174,10 @@ float randomRotationAngle() {
                 
             } completion:^(BOOL finished) {
                 
-                NSMutableArray *temp = [self.views mutableCopy];
-                [temp removeObjectAtIndex:0];
-                [temp addObject:self.views[0]];
-                self.views = temp;
-                self.topView = self.views[0];
+                [self recycleView];
                 
-                if ([self.delegate respondsToSelector:@selector(viewStack:didMoveViewToTopOfStack:)])
-                    [self.delegate viewStack:self didMoveViewToTopOfStack:self.topView];
+                if ([self.delegate respondsToSelector:@selector(viewStack:didMoveViewToTopOfStack:withIndex:)])
+                    [self.delegate viewStack:self didMoveViewToTopOfStack:self.topView withIndex:(NSUInteger)self.indexOfTopView];
                 
                 _animating = NO;
                 
@@ -159,6 +191,22 @@ float randomRotationAngle() {
             _animating = NO;
         }];
     }
+}
+
+
+#pragma mark - actions
+
+- (void)reloadData {
+    [self loadDataFromDataSource];
+}
+
+- (UIView *)dequeueReusableView {
+    if (self.recycledViews.count == 0) return nil;
+    
+    UIView *viewToRecycle = [self.recycledViews lastObject];
+    [self.recycledViews removeObject:viewToRecycle];
+    
+    return viewToRecycle;
 }
 
 
