@@ -21,7 +21,7 @@ float randomRotationAngle() {
 }
 
 
-@interface LDViewStack()
+@interface LDViewStack() <UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) NSUInteger countOfItems;
 @property (nonatomic, strong) NSMutableArray *views;
@@ -45,7 +45,11 @@ float randomRotationAngle() {
     self.limitRect = CGRectInset(self.bounds, self.bounds.size.width*0.2f, self.bounds.size.height*0.2f);
     
     self.pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+    self.pan.delegate = self;
     [self addGestureRecognizer:self.pan];
+    
+    self.allowX = YES;
+    self.allowY = YES;
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -184,7 +188,7 @@ float randomRotationAngle() {
 - (void)dragView:(UIPanGestureRecognizer *)recognizer {
     CGPoint viewPosition = self.topView.center;
     
-    if (_dragging) {
+    if (_dragging) {        
         CGPoint translation = [recognizer translationInView:self];
         
         viewPosition.x += translation.x;
@@ -197,6 +201,18 @@ float randomRotationAngle() {
         BOOL isInsideLimit = CGRectContainsPoint(self.limitRect, viewPosition);
         [self shuffleViewsAnimated:YES newTopView:!isInsideLimit];
     }
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)recognizer {
+    CGPoint translation = [recognizer translationInView:self];
+    
+    if (NO == self.allowX)
+        return fabs(translation.y) > fabs(translation.x);
+        
+    if (NO == self.allowY)
+        return fabs(translation.x) > fabs(translation.y);
+    
+    return YES;
 }
 
 - (void)handlePan:(UIPanGestureRecognizer *)recognizer {

@@ -40,6 +40,10 @@
 @property (nonatomic, weak) id<LDViewStackDelegate> delegate;
 @property (nonatomic, assign) CGFloat shuffleAnimationDuration;
 
+// Allow translations in X and Y axis. Both default to YES;
+@property (nonatomic, assign) BOOL allowX;
+@property (nonatomic, assign) BOOL allowY;
+
 - (void)reloadData;
 
 @end
