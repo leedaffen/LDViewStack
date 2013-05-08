@@ -91,7 +91,7 @@ float randomRotationAngle() {
     self.countOfItems = [self.dataSource numberOfViewsInStack];
     self.views = [NSMutableArray arrayWithCapacity:self.countOfItems];
     
-    for (int index=self.countOfItems-1; index>=0 ; --index) {
+    for (int index=0; index<self.countOfItems ; ++index) {
         UIView *view = [self viewAtIndex:index];
 
         [self.views insertObject:view atIndex:0];
