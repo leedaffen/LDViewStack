@@ -203,8 +203,9 @@ float randomRotationAngle() {
     }
 }
 
-- (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)recognizer {
-    CGPoint translation = [recognizer translationInView:self];
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)recognizer {
+    if (NO == [recognizer isMemberOfClass:[UIPanGestureRecognizer class]]) return YES;
+    CGPoint translation = [(UIPanGestureRecognizer *)recognizer translationInView:self];
     
     if (NO == self.allowX)
         return fabs(translation.y) > fabs(translation.x);
