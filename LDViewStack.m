@@ -201,6 +201,7 @@ float randomRotationAngle() {
 
 - (void)handlePan:(UIPanGestureRecognizer *)recognizer {
     if (_animating) return;
+    if (self.countOfItems == 0) return;
     
     switch (recognizer.state) {
         case UIGestureRecognizerStateBegan:
