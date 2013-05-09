@@ -7,26 +7,14 @@
 //
 
 #import "LDViewStack.h"
-
-
-float randomRotationAngle() {
-    // provides random rotations over an arc -π/24rad to π/24rad (approx. 336 to 24 deg)
-    Float32 angle = arc4random()/((pow(2, 32)-1)) * M_PI/24;
-    Boolean neg = arc4random()%2<1? false : true;
-    
-    if (neg)
-        angle = 0-angle;
-    
-    return angle;
-}
-
+#import "LDViewStackView.h"
 
 @interface LDViewStack() <UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) NSUInteger countOfItems;
 @property (nonatomic, strong) NSMutableArray *views;
 
-@property (nonatomic, strong) UIView *topView;
+@property (nonatomic, strong) LDViewStackView *topView;
 @property (nonatomic, assign) CGRect limitRect;
 
 @property (nonatomic, strong) UIPanGestureRecognizer *pan;
@@ -67,22 +55,11 @@ float randomRotationAngle() {
 }
 
 - (UIView *)viewAtIndex:(NSUInteger)index {
-    UIView *view = [self.dataSource viewStack:self viewAtIndex:index];
+    UIView *displayView = [self.dataSource viewStack:self viewAtIndex:index];
     
-    view.layer.shouldRasterize = YES;
-    
-    // add shadow
-    view.layer.shadowColor = UIColor.blackColor.CGColor;
-    view.layer.shadowOffset = CGSizeMake(2.0f, 2.0f);
-    view.layer.shadowOpacity = 0.35f;
-    view.layer.shadowRadius = 3.0f;
-    
-    // add border
-    view.layer.borderColor = UIColor.whiteColor.CGColor;
-    view.layer.borderWidth = 5.0f;
-    
-    // apply random rotation transform
-    view.transform = CGAffineTransformRotate(view.transform, randomRotationAngle());
+    // make a new empty view
+    LDViewStackView *view = [[LDViewStackView alloc] initWithFrame:displayView.bounds];
+    view.displayView = displayView;
     
     return view;
 }
@@ -98,8 +75,11 @@ float randomRotationAngle() {
         [self addSubview:view];
     }
     
-    if (self.views.count >= 1)
+    if (self.views.count >= 1) {
         self.topView = self.views[0];
+        if ([self.delegate respondsToSelector:@selector(viewStack:didMoveViewToTopOfStack:)])
+            [self.delegate viewStack:self didMoveViewToTopOfStack:self.topView.displayView];
+    }
 }
 
 - (void)initialiseWithNewDataSource {
@@ -149,7 +129,7 @@ float randomRotationAngle() {
                 self.topView = self.views[0];
                 
                 if ([self.delegate respondsToSelector:@selector(viewStack:didMoveViewToTopOfStack:)])
-                    [self.delegate viewStack:self didMoveViewToTopOfStack:self.topView];
+                    [self.delegate viewStack:self didMoveViewToTopOfStack:self.topView.displayView];
                 
                 _animating = NO;
                 
@@ -218,7 +198,7 @@ float randomRotationAngle() {
 
 - (void)handlePan:(UIPanGestureRecognizer *)recognizer {
     if (_animating) return;
-    if (self.countOfItems == 0) return;
+    if (self.countOfItems < 2) return;
     
     switch (recognizer.state) {
         case UIGestureRecognizerStateBegan:
