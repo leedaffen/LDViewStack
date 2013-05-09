@@ -9,8 +9,8 @@
 #import "LDViewStackView.h"
 
 float randomRotationAngle() {
-    // provides random rotations over an arc -π/24rad to π/24rad (approx. 336 to 24 deg)
-    Float32 angle = arc4random()/((pow(2, 32)-1)) * M_PI/24;
+    // provides random rotations over an arc -π/36rad to π/36rad (approx. 344 to 16 deg)
+    Float32 angle = arc4random()/((pow(2, 32)-1)) * M_PI/36;
     Boolean neg = arc4random()%2<1? false : true;
     
     if (neg)

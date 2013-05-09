@@ -55,12 +55,9 @@
     return self;
 }
 
-- (UIView *)viewAtIndex:(NSUInteger)index {
+- (void)getDisplayViewForView:(LDViewStackView *)view withIndex:(NSUInteger)index {
     UIView *displayView = [self.dataSource viewStack:self viewAtIndex:index];
-    LDViewStackView *view = self.views[index];
     view.displayView = displayView;
-    
-    return view;
 }
 
 - (void)loadDataFromDataSource {
@@ -73,7 +70,7 @@
         view.backgroundColor = [UIColor whiteColor];
         
         if (index < self.maxVisibleItems)
-            view.displayView = [self.dataSource viewStack:self viewAtIndex:index];
+            [self getDisplayViewForView:view withIndex:index];
 
         [self.views addObject:view];
         
@@ -129,7 +126,7 @@
         
         LDViewStackView *view = self.views[index];
         if (nil == view.displayView)
-            view.displayView = [self.dataSource viewStack:self viewAtIndex:indexToRequest];
+            [self getDisplayViewForView:view withIndex:indexToRequest];
     }
 }
 
