@@ -15,6 +15,7 @@
 @property (nonatomic, strong) NSMutableArray *views;
 
 @property (nonatomic, strong) LDViewStackView *topView;
+@property (nonatomic, assign) NSUInteger indexOfTopView;
 @property (nonatomic, assign) CGRect limitRect;
 
 @property (nonatomic, strong) UIPanGestureRecognizer *pan;
@@ -56,9 +57,7 @@
 
 - (UIView *)viewAtIndex:(NSUInteger)index {
     UIView *displayView = [self.dataSource viewStack:self viewAtIndex:index];
-    
-    // make a new empty view
-    LDViewStackView *view = [[LDViewStackView alloc] initWithFrame:displayView.bounds];
+    LDViewStackView *view = self.views[index];
     view.displayView = displayView;
     
     return view;
@@ -69,10 +68,16 @@
     self.views = [NSMutableArray arrayWithCapacity:self.countOfItems];
     
     for (int index=0; index<self.countOfItems ; ++index) {
-        UIView *view = [self viewAtIndex:index];
+        // make a new empty view
+        LDViewStackView *view = [[LDViewStackView alloc] initWithFrame:self.bounds];
+        view.backgroundColor = [UIColor whiteColor];
+        
+        if (index < self.maxVisibleItems)
+            view.displayView = [self.dataSource viewStack:self viewAtIndex:index];
 
-        [self.views insertObject:view atIndex:0];
-        [self addSubview:view];
+        [self.views addObject:view];
+        
+        [self insertSubview:view atIndex:0];
     }
     
     if (self.views.count >= 1) {
@@ -86,6 +91,7 @@
     if (nil != self.views) {
         [self.views makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [self.views removeAllObjects];
+        self.indexOfTopView = 0;
     }
     
     [self loadDataFromDataSource];
@@ -105,6 +111,28 @@
     return CGPointMake(xIdeal, yIdeal);
 }
 
+- (void)recycleViews {
+    ++self.indexOfTopView;
+    if (self.indexOfTopView >= self.views.count)
+        self.indexOfTopView = 0;
+    
+    NSMutableArray *temp = [self.views mutableCopy];
+    [temp removeObjectAtIndex:0];
+    [temp addObject:self.views[0]];
+    [self.topView removeDisplayView];
+    self.views = temp;
+    self.topView = self.views[0];
+    
+    int maxIndex = MIN(self.maxVisibleItems, self.views.count);
+    for (int index=0; index<maxIndex; ++index) {
+        int indexToRequest = (index+self.indexOfTopView) % self.views.count;
+        
+        LDViewStackView *view = self.views[index];
+        if (nil == view.displayView)
+            view.displayView = [self.dataSource viewStack:self viewAtIndex:indexToRequest];
+    }
+}
+
 - (void)shuffleViewsAnimated:(BOOL)animated newTopView:(BOOL)newTopView {
     _animating = YES;
     
@@ -122,11 +150,7 @@
                 
             } completion:^(BOOL finished) {
                 
-                NSMutableArray *temp = [self.views mutableCopy];
-                [temp removeObjectAtIndex:0];
-                [temp addObject:self.views[0]];
-                self.views = temp;
-                self.topView = self.views[0];
+                [self recycleViews];
                 
                 if ([self.delegate respondsToSelector:@selector(viewStack:didMoveViewToTopOfStack:)])
                     [self.delegate viewStack:self didMoveViewToTopOfStack:self.topView.displayView];
@@ -147,6 +171,12 @@
 
 
 #pragma mark - setters/getters
+
+- (NSUInteger)maxVisibleItems {
+    if (0 == _maxVisibleItems)
+        _maxVisibleItems = 3;
+    return _maxVisibleItems;
+}
 
 - (void)setDataSource:(id<LDViewStackDataSource>)dataSource {
     if (_dataSource != dataSource) {

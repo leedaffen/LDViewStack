@@ -43,6 +43,8 @@
 @property (nonatomic, assign) BOOL allowX;
 @property (nonatomic, assign) BOOL allowY;
 
+@property (nonatomic, assign) NSUInteger maxVisibleItems;
+
 - (void)reloadData;
 
 @end

@@ -23,10 +23,8 @@ float randomRotationAngle() {
 
 - (void)setDisplayView:(UIView *)displayView {
     if (_displayView != displayView) {
-        if (nil != _displayView) {
-            [_displayView removeFromSuperview];
-            _displayView = nil;
-        }
+        if (nil != _displayView)
+            [self removeDisplayView];
         
         _displayView = displayView;
         
@@ -51,6 +49,11 @@ float randomRotationAngle() {
     // apply random rotation transform
     self.rotationAngle = randomRotationAngle();
     self.transform = CGAffineTransformRotate(self.transform, self.rotationAngle);
+}
+
+- (void)removeDisplayView {
+    [_displayView removeFromSuperview];
+    _displayView = nil;
 }
 
 @end

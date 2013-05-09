@@ -14,4 +14,6 @@
 @property (nonatomic, strong) UIView *displayView;
 @property (nonatomic, assign) CGFloat rotationAngle;
 
+- (void)removeDisplayView;
+
 @end
