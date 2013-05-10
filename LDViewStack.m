@@ -84,17 +84,13 @@
     }
 }
 
-- (void)initialiseWithNewDataSource {
+- (void)reloadData {
     if (nil != self.views) {
         [self.views makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [self.views removeAllObjects];
         self.indexOfTopView = 0;
     }
     
-    [self loadDataFromDataSource];
-}
-
-- (void)reloadData {
     [self loadDataFromDataSource];
 }
 
@@ -179,7 +175,7 @@
     if (_dataSource != dataSource) {
         _dataSource = dataSource;
         
-        [self initialiseWithNewDataSource];
+        [self reloadData];
     }
 }
 
