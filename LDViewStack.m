@@ -20,6 +20,10 @@
 
 @property (nonatomic, strong) UIPanGestureRecognizer *pan;
 
+@property (nonatomic, strong) UIView *originalParentView;
+@property (nonatomic, assign) CGRect originalFrame;
+@property (nonatomic, strong) UIView *overlayParentView_internal;
+
 @end
 
 
@@ -53,6 +57,15 @@
         [self initialise];
     }
     return self;
+}
+
+- (void)willMoveToSuperview:(UIView *)newSuperview {
+    [super willMoveToSuperview:newSuperview];
+    
+    if (nil == self.originalParentView) {
+        _originalFrame = self.frame;
+        self.originalParentView = newSuperview;
+    }
 }
 
 - (void)getDisplayViewForView:(LDViewStackView *)view withIndex:(NSUInteger)index {
@@ -150,6 +163,8 @@
                 
                 _animating = NO;
                 
+                // move ourselves back to our original parent view
+                [self moveStackToView:self.originalParentView];                
             }];
             
         }];
@@ -160,6 +175,21 @@
             _animating = NO;
         }];
     }
+}
+
+- (void)moveStackToView:(UIView *)view {
+    if (nil == self.overlayParentView) return;
+    
+    if (view != self.originalParentView) {
+        CGRect f = [self.overlayParentView_internal convertRect:self.frame fromView:self.originalParentView];
+        self.frame = f;
+    } else {
+        self.frame = _originalFrame;
+        [self.overlayParentView_internal removeFromSuperview];
+        self.overlayParentView_internal = nil;
+    }
+    
+    [view addSubview:self];
 }
 
 
@@ -185,13 +215,23 @@
     return _shuffleAnimationDuration;
 }
 
+- (UIView *)overlayParentView_internal {
+    // make a new overlay view
+    if (nil == _overlayParentView_internal) {
+        _overlayParentView_internal = [[UIView alloc] initWithFrame:self.overlayParentView.frame];
+        [self.overlayParentView addSubview:_overlayParentView_internal];
+    }
+    
+    return _overlayParentView_internal;
+}
+
 
 #pragma mark - user interaction
 
 - (void)dragView:(UIPanGestureRecognizer *)recognizer {
     CGPoint viewPosition = self.topView.center;
     
-    if (_dragging) {        
+    if (_dragging) {
         CGPoint translation = [recognizer translationInView:self];
         
         viewPosition.x += translation.x;
@@ -220,12 +260,15 @@
 }
 
 - (void)handlePan:(UIPanGestureRecognizer *)recognizer {
+    // bail if we're already animating an image or we only have one view
     if (_animating) return;
     if (self.countOfItems < 2) return;
     
     switch (recognizer.state) {
         case UIGestureRecognizerStateBegan:
             _dragging = YES;
+            // move ourselves into a new overlay view (the superview should be specified in the implementation)
+            [self moveStackToView:self.overlayParentView_internal];
             [self dragView:recognizer];
             break;
             
@@ -240,14 +283,13 @@
             
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateFailed:
-            [self dragView:recognizer];
             _dragging = NO;
+            [self dragView:recognizer];
             break;
             
         default:
             break;
     }
 }
-
 
 @end
