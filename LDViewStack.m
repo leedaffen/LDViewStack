@@ -170,6 +170,9 @@
             self.topView.center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
         } completion:^(BOOL finished) {
             _animating = NO;
+            
+            // move ourselves back to our original parent view
+            [self moveStackToView:self.originalParentView];
         }];
     }
 }
