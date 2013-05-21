@@ -40,9 +40,6 @@
     self.pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     self.pan.delegate = self;
     [self addGestureRecognizer:self.pan];
-    
-    self.allowX = YES;
-    self.allowY = YES;
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -250,10 +247,10 @@
     if (NO == [recognizer isMemberOfClass:[UIPanGestureRecognizer class]]) return YES;
     CGPoint translation = [(UIPanGestureRecognizer *)recognizer translationInView:self];
     
-    if (NO == self.allowX)
+    if (YES == self.preventX)
         return fabs(translation.y) > fabs(translation.x);
         
-    if (NO == self.allowY)
+    if (YES == self.preventY)
         return fabs(translation.x) > fabs(translation.y);
     
     return YES;

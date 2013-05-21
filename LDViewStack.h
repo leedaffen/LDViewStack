@@ -42,8 +42,8 @@
 @property (nonatomic, assign) NSUInteger maxVisibleItems;
 
 // Allow translations in X and Y axis. Both default to YES;
-@property (nonatomic, assign) BOOL allowX;
-@property (nonatomic, assign) BOOL allowY;
+@property (nonatomic, assign) BOOL preventX;
+@property (nonatomic, assign) BOOL preventY;
 
 // OPTIONAL - view into which the stack will be temporarily placed when dragging (used prevent bounds-clipping from parent views)
 @property (nonatomic, strong) UIView *overlayParentView;
