@@ -37,6 +37,10 @@ float randomRotationAngle() {
         f.origin.x = f.origin.x - kBorderWidth;
         f.origin.y = f.origin.y - kBorderWidth;
         self.frame = f;
+        
+        // apply random rotation transform
+        self.rotationAngle = randomRotationAngle();
+        self.transform = CGAffineTransformRotate(self.transform, self.rotationAngle);
     }
     return self;
 }
@@ -56,9 +60,7 @@ float randomRotationAngle() {
     }
 }
 
-- (void)willMoveToSuperview:(UIView *)newSuperview {
-    [super willMoveToSuperview:newSuperview];
-    
+- (void)drawRect:(CGRect)rect {
     // add a shadow
     self.layer.shouldRasterize = YES;
     self.layer.shadowColor = [[UIColor blackColor] CGColor];
@@ -69,10 +71,6 @@ float randomRotationAngle() {
     // add border
     self.layer.borderColor = UIColor.whiteColor.CGColor;
     self.layer.borderWidth = kBorderWidth;
-    
-    // apply random rotation transform
-    self.rotationAngle = randomRotationAngle();
-    self.transform = CGAffineTransformRotate(self.transform, self.rotationAngle);
 }
 
 - (void)removeDisplayView {
