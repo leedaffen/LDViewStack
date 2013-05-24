@@ -8,6 +8,14 @@
 
 #import "LDViewStackView.h"
 
+
+const CGFloat kBorderWidth = 4.0f;
+const CGFloat kShadowRadius = 3.0f;
+const CGFloat kShadowOpacity = 0.35f;
+const CGFloat kShadowOffsetX = 2.0f;
+const CGFloat kShadowOffsetY = 2.0f;
+
+
 float randomRotationAngle() {
     // provides random rotations over an arc -π/36rad to π/36rad (approx. 344 to 16 deg)
     Float32 angle = arc4random()/((pow(2, 32)-1)) * M_PI/36;
@@ -21,12 +29,28 @@ float randomRotationAngle() {
 
 @implementation LDViewStackView
 
+- (id)initWithFrame:(CGRect)frame {
+    if ((self = [super initWithFrame:frame])) {
+        CGRect f = self.frame;
+        f.size.width = f.size.width + (2*kBorderWidth);
+        f.size.height = f.size.height + (2*kBorderWidth);
+        f.origin.x = f.origin.x - kBorderWidth;
+        f.origin.y = f.origin.y - kBorderWidth;
+        self.frame = f;
+    }
+    return self;
+}
+
 - (void)setDisplayView:(UIView *)displayView {
     if (_displayView != displayView) {
         if (nil != _displayView)
             [self removeDisplayView];
         
         _displayView = displayView;
+        CGRect f = _displayView.frame;
+        f.origin.x = f.origin.x + kBorderWidth;
+        f.origin.y = f.origin.y + kBorderWidth;
+        _displayView.frame = f;
         
         [self addSubview:displayView];
     }
@@ -38,13 +62,13 @@ float randomRotationAngle() {
     // add a shadow
     self.layer.shouldRasterize = YES;
     self.layer.shadowColor = [[UIColor blackColor] CGColor];
-    self.layer.shadowOffset = CGSizeMake(2.0f, 2.0f);
-    self.layer.shadowRadius = 3.0f;
-    self.layer.shadowOpacity = 0.35f;
+    self.layer.shadowOffset = CGSizeMake(kShadowOffsetX, kShadowOffsetY);
+    self.layer.shadowRadius = kShadowRadius;
+    self.layer.shadowOpacity = kShadowOpacity;
     
     // add border
     self.layer.borderColor = UIColor.whiteColor.CGColor;
-    self.layer.borderWidth = 4.0f;
+    self.layer.borderWidth = kBorderWidth;
     
     // apply random rotation transform
     self.rotationAngle = randomRotationAngle();
