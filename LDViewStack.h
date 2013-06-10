@@ -46,7 +46,7 @@
 @property (nonatomic, assign) BOOL preventY;
 
 // OPTIONAL - view into which the stack will be temporarily placed when dragging (used prevent bounds-clipping from parent views)
-@property (nonatomic, strong) UIView *overlayParentView;
+@property (nonatomic, weak) UIView *overlayParentView;
 
 
 - (void)reloadData;
