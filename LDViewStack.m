@@ -18,9 +18,7 @@
 @property (nonatomic, assign) NSUInteger indexOfTopView;
 @property (nonatomic, assign) CGRect limitRect;
 
-@property (nonatomic, strong) UIPanGestureRecognizer *pan;
-
-@property (nonatomic, strong) UIView *originalParentView;
+@property (nonatomic, weak) UIView *originalParentView;
 @property (nonatomic, assign) CGRect originalFrame;
 @property (nonatomic, strong) UIView *overlayParentView_internal;
 
@@ -37,9 +35,9 @@
     
     self.limitRect = CGRectInset(self.bounds, self.bounds.size.width*0.2f, self.bounds.size.height*0.2f);
     
-    self.pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    self.pan.delegate = self;
-    [self addGestureRecognizer:self.pan];
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+    pan.delegate = self;
+    [self addGestureRecognizer:pan];
 }
 
 - (id)initWithFrame:(CGRect)frame {
