@@ -41,6 +41,17 @@ float randomRotationAngle() {
         // apply random rotation transform
         self.rotationAngle = randomRotationAngle();
         self.transform = CGAffineTransformRotate(self.transform, self.rotationAngle);
+        
+        // add a shadow
+        self.layer.shouldRasterize = YES;
+        self.layer.shadowColor = [[UIColor blackColor] CGColor];
+        self.layer.shadowOffset = CGSizeMake(kShadowOffsetX, kShadowOffsetY);
+        self.layer.shadowRadius = kShadowRadius;
+        self.layer.shadowOpacity = kShadowOpacity;
+        
+        // add border
+        self.layer.borderColor = UIColor.whiteColor.CGColor;
+        self.layer.borderWidth = kBorderWidth;
     }
     return self;
 }
@@ -58,19 +69,6 @@ float randomRotationAngle() {
         
         [self addSubview:displayView];
     }
-}
-
-- (void)drawRect:(CGRect)rect {
-    // add a shadow
-    self.layer.shouldRasterize = YES;
-    self.layer.shadowColor = [[UIColor blackColor] CGColor];
-    self.layer.shadowOffset = CGSizeMake(kShadowOffsetX, kShadowOffsetY);
-    self.layer.shadowRadius = kShadowRadius;
-    self.layer.shadowOpacity = kShadowOpacity;
-    
-    // add border
-    self.layer.borderColor = UIColor.whiteColor.CGColor;
-    self.layer.borderWidth = kBorderWidth;
 }
 
 - (void)removeDisplayView {
