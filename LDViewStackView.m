@@ -3,7 +3,7 @@
 //  Yoga
 //
 //  Created by Lee Daffen on 09/05/2013.
-//  Copyright (c) 2013 Sam Dean. All rights reserved.
+//  Copyright (c) 2013 Lee Daffen. All rights reserved.
 //
 
 #import "LDViewStackView.h"
