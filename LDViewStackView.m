@@ -27,6 +27,14 @@ float randomRotationAngle() {
     return angle;
 }
 
+
+@interface LDViewStackView()
+
+@property (nonatomic, strong) CALayer *shadowLayer;
+
+@end
+
+
 @implementation LDViewStackView
 
 - (id)initWithFrame:(CGRect)frame {
@@ -43,11 +51,20 @@ float randomRotationAngle() {
         self.transform = CGAffineTransformRotate(self.transform, self.rotationAngle);
         
         // add a shadow
-        self.layer.shouldRasterize = YES;
-        self.layer.shadowColor = [[UIColor blackColor] CGColor];
-        self.layer.shadowOffset = CGSizeMake(kShadowOffsetX, kShadowOffsetY);
-        self.layer.shadowRadius = kShadowRadius;
-        self.layer.shadowOpacity = kShadowOpacity;
+        if (nil == self.shadowLayer) {
+            self.shadowLayer = [CALayer layer];
+            self.shadowLayer.frame = self.bounds;
+            self.shadowLayer.backgroundColor = [[UIColor whiteColor] CGColor];
+            self.shadowLayer.shouldRasterize = YES;
+            self.shadowLayer.shadowColor = [[UIColor blackColor] CGColor];
+            self.shadowLayer.shadowOffset = CGSizeMake(kShadowOffsetX, kShadowOffsetY);
+            self.shadowLayer.shadowRadius = kShadowRadius;
+            self.shadowLayer.shadowOpacity = kShadowOpacity;
+            self.shadowLayer.shadowPath = CGPathCreateWithRect(self.bounds, nil);
+            
+            self.layer.masksToBounds = NO;
+            [self.layer addSublayer:self.shadowLayer];
+        }
         
         // add border
         self.layer.borderColor = UIColor.whiteColor.CGColor;
