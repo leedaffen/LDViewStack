@@ -10,7 +10,7 @@
 
 
 const CGFloat kBorderWidth = 4.0f;
-const CGFloat kShadowRadius = 3.0f;
+const CGFloat kShadowRadius = 2.0f;
 const CGFloat kShadowOpacity = 0.35f;
 const CGFloat kShadowOffsetX = 2.0f;
 const CGFloat kShadowOffsetY = 2.0f;
@@ -45,6 +45,7 @@ float randomRotationAngle() {
         f.origin.x = f.origin.x - kBorderWidth;
         f.origin.y = f.origin.y - kBorderWidth;
         self.frame = f;
+        self.backgroundColor = [UIColor whiteColor];
         
         // apply random rotation transform
         self.rotationAngle = randomRotationAngle();
@@ -67,7 +68,7 @@ float randomRotationAngle() {
         }
         
         // add border
-        self.layer.borderColor = UIColor.whiteColor.CGColor;
+        self.layer.borderColor = [[UIColor whiteColor] CGColor];
         self.layer.borderWidth = kBorderWidth;
     }
     return self;
