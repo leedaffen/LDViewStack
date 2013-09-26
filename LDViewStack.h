@@ -35,8 +35,8 @@
 
 @interface LDViewStack : UIView
 
-@property (nonatomic, weak) id<LDViewStackDataSource> dataSource;
-@property (nonatomic, weak) id<LDViewStackDelegate> delegate;
+@property (nonatomic, weak) IBOutlet id<LDViewStackDataSource> dataSource;
+@property (nonatomic, weak) IBOutlet id<LDViewStackDelegate> delegate;
 @property (nonatomic, assign) CGFloat shuffleAnimationDuration;
 
 @property (nonatomic, assign) NSUInteger maxVisibleItems;
