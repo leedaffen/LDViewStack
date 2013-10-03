@@ -56,15 +56,6 @@
     return self;
 }
 
-- (void)willMoveToSuperview:(UIView *)newSuperview {
-    [super willMoveToSuperview:newSuperview];
-    
-    if (nil == self.originalParentView) {
-        _originalFrame = self.frame;
-        self.originalParentView = newSuperview;
-    }
-}
-
 - (void)getDisplayViewForView:(LDViewStackView *)view withIndex:(NSUInteger)index {
     UIView *displayView = [self.dataSource viewStack:self viewAtIndex:index];
     view.displayView = displayView;
@@ -183,6 +174,7 @@
     const BOOL autolayout = [self respondsToSelector:@selector(translatesAutoresizingMaskIntoConstraints)];
     
     if (view != self.originalParentView) {
+        self.originalParentView = self.superview;
         self.originalFrame = self.frame;
         CGRect f = [self convertRect:self.bounds toView:view];
         self.frame = f;
