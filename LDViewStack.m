@@ -19,8 +19,10 @@
 @property (nonatomic, assign) CGRect limitRect;
 
 @property (nonatomic, weak) UIView *originalParentView;
+@property (nonatomic, strong) UIView *temporaryOverlaidContainer;
+
 @property (nonatomic, assign) CGRect originalFrame;
-@property (nonatomic, strong) UIView *overlayParentView_internal;
+@property (nonatomic, copy) NSArray *originalConstraints;
 
 @end
 
@@ -178,18 +180,29 @@
 - (void)moveStackToView:(UIView *)view {
     if (nil == self.overlayParentView) return;
     
+    const BOOL autolayout = [self respondsToSelector:@selector(translatesAutoresizingMaskIntoConstraints)];
+    
     if (view != self.originalParentView) {
-        CGRect f = [self.overlayParentView_internal convertRect:self.frame fromView:self.originalParentView];
+        self.originalFrame = self.frame;
+        CGRect f = [self convertRect:self.bounds toView:view];
         self.frame = f;
+        if (autolayout) {
+            self.originalConstraints = self.constraints;
+            [self removeConstraints:self.constraints];
+            self.translatesAutoresizingMaskIntoConstraints = YES;
+        }
     } else {
-        self.frame = _originalFrame;
-        [self.overlayParentView_internal removeFromSuperview];
-        self.overlayParentView_internal = nil;
+        self.frame = self.originalFrame;
+        if (autolayout) {
+            [self addConstraints:self.originalConstraints];
+            self.translatesAutoresizingMaskIntoConstraints = self.constraints == 0;
+        }
+        [self.temporaryOverlaidContainer removeFromSuperview];
+        self.temporaryOverlaidContainer = nil;
     }
     
     [view addSubview:self];
 }
-
 
 #pragma mark - setters/getters
 
@@ -213,16 +226,16 @@
     return _shuffleAnimationDuration;
 }
 
-- (UIView *)overlayParentView_internal {
+- (UIView *)temporaryOverlaidContainer {
     // make a new overlay view
-    if (nil == _overlayParentView_internal) {
-        _overlayParentView_internal = [[UIView alloc] initWithFrame:self.overlayParentView.frame];
-        [self.overlayParentView addSubview:_overlayParentView_internal];
+    if (nil == _temporaryOverlaidContainer && self.overlayParentView) {
+        _temporaryOverlaidContainer = [[UIView alloc] initWithFrame:self.overlayParentView.frame];
+        _temporaryOverlaidContainer.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [self.overlayParentView addSubview:_temporaryOverlaidContainer];
     }
     
-    return _overlayParentView_internal;
+    return _temporaryOverlaidContainer;
 }
-
 
 #pragma mark - user interaction
 
@@ -266,7 +279,7 @@
         case UIGestureRecognizerStateBegan:
             _dragging = YES;
             // move ourselves into a new overlay view (the superview should be specified in the implementation)
-            [self moveStackToView:self.overlayParentView_internal];
+            [self moveStackToView:self.temporaryOverlaidContainer];
             [self dragView:recognizer];
             break;
             
