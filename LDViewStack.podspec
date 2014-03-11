@@ -2,9 +2,9 @@ Pod::Spec.new do |s|
   s.name                    = "LDViewStack"
   s.version                 = "0.1.0"
   s.summary                 = "Randomly positioned stack of draggable UIViews"
-  s.homepage                = "http://www.leedaffen.co.uk"
+  s.homepage                = "https://github.com/leedaffen/LDViewStack"
   s.license                 = 'MIT'
-  s.author                  = { "Lee Daffen" => "leedaffen@hotmail.com" }
+  s.author                  = { "Lee Daffen" => "leedaffen@gmail.com" }
   s.source                  = { :git => "https://github.com/leedaffen/LDViewStack.git", :tag => s.version.to_s }
   s.social_media_url        = 'https://twitter.com/leedaffen'
 
