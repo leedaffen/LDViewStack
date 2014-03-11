@@ -6,7 +6,6 @@ Pod::Spec.new do |s|
   s.license                 = 'MIT'
   s.author                  = { "Lee Daffen" => "leedaffen@gmail.com" }
   s.source                  = { :git => "https://github.com/leedaffen/LDViewStack.git", :tag => s.version.to_s }
-  s.social_media_url        = 'https://twitter.com/leedaffen'
 
   s.platform                = :ios, '6.0'
   s.ios.deployment_target   = '6.0'
