@@ -18,7 +18,7 @@ it simply add the following line to your Podfile:
 
 ## Author
 
-Lee Daffen, lee.daffen@net-a-porter.com
+Lee Daffen, leedaffen@hotmail.com
 
 ## License
 
